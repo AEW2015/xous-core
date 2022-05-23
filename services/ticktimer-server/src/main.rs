@@ -727,11 +727,12 @@ fn xmain() -> ! {
                     let condvar = scalar.arg1;
                     let timeout = scalar.arg2;
 
-                    log::trace!(
-                        "sender in pid {:?} is waiting on a condition {:08x} with a timeout of {}",
+                    log::info!(
+                        "sender in pid {:?} is waiting on a condition {:08x} with a timeout of {} add to table of {} entries",
                         pid,
                         condvar,
-                        timeout
+                        timeout,
+                        notify_hash.len(),
                     );
 
                     // If there's a condition waiting already, decrement the total list

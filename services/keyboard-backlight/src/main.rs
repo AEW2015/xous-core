@@ -95,7 +95,7 @@ fn xmain() -> ! {
 }
 
 fn turn_lights_on(rx: Box<Receiver<ThreadOps>>, cid: xous::CID) {
-    let standard_duration = std::time::Duration::from_secs(10);
+    let standard_duration = std::time::Duration::from_secs(5);
 
     let mut timeout = std::time::Instant::now() + standard_duration;
 

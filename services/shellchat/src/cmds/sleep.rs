@@ -71,19 +71,39 @@ impl<'a> ShellCmdApi<'a> for Sleep {
                 "stress" => {
                     let _ = thread::spawn({
                         move || {
+                            use num_traits::*;
                             log::info!("suspend/resume stress test active");
 
                             let xns = xous_names::XousNames::new().unwrap();
                             let llio = llio::Llio::new(&xns);
                             let susres = susres::Susres::new_without_hook(&xns).unwrap();
                             let ticktimer = ticktimer_server::Ticktimer::new().unwrap();
+                            let trng = trng::Trng::new(&xns).unwrap();
                             ticktimer.sleep_ms(1500).unwrap();
+                            let kconn = xns.request_connection_blocking(keyboard::api::SERVER_NAME_KBD).expect("Can't connect to KBD");
                             let mut iters = 0;
                             loop {
                                 log::info!("suspend/resume cycle: {}", iters);
+                                let fuzz = trng.get_u32().unwrap() % 6000;
+                                let fuzz2 = trng.get_u32().unwrap() % 350;
+                                log::info!("fuzz: {}/{}", fuzz2, fuzz);
+                                xous::send_message(kconn,
+                                    xous::Message::new_scalar(keyboard::Opcode::InjectKey.to_usize().unwrap(),
+                                       0xd as usize, 0, 0, 0
+                                )).unwrap();
+                                ticktimer.sleep_ms(fuzz2 as usize).unwrap();
                                 llio.set_wakeup_alarm(4).unwrap();
                                 susres.initiate_suspend().unwrap();
-                                ticktimer.sleep_ms(8000).unwrap();
+                                for _ in 0..7 {
+                                    ticktimer.sleep_ms(1000 + fuzz2 as usize).unwrap(); // this has to be bigger than the suspend timeout timer time
+                                    if fuzz2 % 2 == 0 { // sometimes push keys, sometimes don't
+                                        xous::send_message(kconn,
+                                            xous::Message::new_scalar(keyboard::Opcode::InjectKey.to_usize().unwrap(),
+                                            'a' as u32 as usize, 0, 0, 0
+                                        )).unwrap();
+                                    }
+                                }
+                                ticktimer.sleep_ms(1000 + fuzz as usize).unwrap();
                                 iters += 1;
                             }
                         }
