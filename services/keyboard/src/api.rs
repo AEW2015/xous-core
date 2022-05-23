@@ -48,7 +48,7 @@ impl Into<usize> for KeyMap {
 }
 
 #[derive(Debug, num_derive::FromPrimitive, num_derive::ToPrimitive)]
-pub(crate) enum Opcode {
+pub enum Opcode {
     /// set which keyboard mapping is present
     SelectKeyMap, //(KeyMap),
     GetKeyMap,
