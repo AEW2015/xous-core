@@ -123,7 +123,7 @@ impl Envelope {
             _ => {
                 let result = crate::send_message(connection, body);
                 let new_self = ManuallyDrop::into_inner(manual_self);
-
+                println!("result: {:?}", result);
                 if let Ok(crate::Result::Ok) = result {
                     // `new_self` will have its Drop() called
                     return Ok(());

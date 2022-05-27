@@ -15,7 +15,7 @@ pub(crate) fn main(sid: SID) -> ! {
     PANIC!
 Details: PanicInfo { payload: Any { .. }, message: Some(called `Result::unwrap()` on an `Err` value: ()), location: Location { file: "services/websocket/src/manager.rs", line: 14, col: 29 } }
     */
-    log_server::init_wait().unwrap();
+    // log_server::init_wait().unwrap();
 
     /* The following block causes
         PANIC!

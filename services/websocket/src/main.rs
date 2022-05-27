@@ -36,9 +36,14 @@ fn xmain() -> ! {
         let _response = match FromPrimitive::from_usize(msg.body.id()) {
             Some(Opcode::Open) => {
                 log::info!("Websocket Opcode::Open");
-                let _rsp = msg
-                    .forward(ws_manager_cid, ClientOp::Open as _)
-                    .expect("failed to forward Opcode::Open");
+                let _rsp = match msg
+                    .forward(ws_manager_cid, ClientOp::Open as _) {
+                        Ok(r) => r,
+                        Err(e) => {
+                            log::info!("failed to forward Opcode::Open: {:?}", e);
+                            panic!();
+                        }
+                    };
                 log::info!("Websocket Opcode::Open complete");
             }
             None => {}
