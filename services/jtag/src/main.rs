@@ -550,6 +550,117 @@ fn main() -> ! {
                 } else {
                     log::trace!("ID data not in get queue!");
                 }
+            }),            
+            // Some(Opcode::GetWBStar) => msg_blocking_scalar_unpack!(msg, _, _, _, _, {
+            //     jtag.reset();
+            //     let mut id_leg: JtagLeg = JtagLeg::new(JtagChain::IR, "cfg_in");
+            //     id_leg.push_u32(0b000101, 6, JtagEndian::Little); //CFG in for 
+            //     jtag.add(id_leg);
+            //     jtag.next();
+            //     // NOW: - check the return data on .get() before using it
+            //     if jtag.get().is_none() { // discard ID code but check that there's something
+            //         log::error!("ID instruction not in get queue!");
+            //         xous::return_scalar(msg.sender, 0xFFFF_FFFF).unwrap();
+            //         continue;
+            //     }
+
+            //     /*
+            //         Array for reading WBStar
+            //         0xAA99FFGG (Sync Word)
+            //         0x20000000 (NOP)
+            //         0x28020001 (Read WBStar)
+            //         0x20000000 (NOP)
+            //         0x20000000 (NOP)
+            //     */
+                
+            //     let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "cfg_in_seq");
+            //     data_leg.push_u32(0, 32, JtagEndian::Little); //
+            //     jtag.add(data_leg);
+            //     jtag.dbg_reset();
+            //     jtag.next();
+            //     let d: u32 = jtag.dbg_get();
+            //     if let Some(mut iddata) = jtag.get() { // this contains the actual idcode data
+            //         let id = iddata.pop_u32(32, JtagEndian::Little).unwrap();
+            //         log::trace!("tag: {}, code: 0x{:08x}, d:{}", iddata.tag(), id, d);
+            //         xous::return_scalar(msg.sender, id as usize).unwrap();
+            //     } else {
+            //         log::trace!("ID data not in get queue!");
+            //     }
+                
+            //     let mut id_leg: JtagLeg = JtagLeg::new(JtagChain::IR, "cfg_out");
+            //     id_leg.push_u32(0b000100, 6, JtagEndian::Little); //CFG out for 
+            //     jtag.add(id_leg);
+            //     jtag.next();
+            //     // NOW: - check the return data on .get() before using it
+            //     if jtag.get().is_none() { // discard ID code but check that there's something
+            //         log::error!("ID instruction not in get queue!");
+            //         xous::return_scalar(msg.sender, 0xFFFF_FFFF).unwrap();
+            //         continue;
+            //     }
+
+            //     let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "wbstardata");
+            //     data_leg.push_u32(0, 32, JtagEndian::Little); //
+            //     jtag.add(data_leg);
+            //     jtag.dbg_reset();
+            //     jtag.next();
+            //     let d: u32 = jtag.dbg_get();
+            //     if let Some(mut iddata) = jtag.get() { // this contains the actual idcode data
+            //         let id = iddata.pop_u32(32, JtagEndian::Little).unwrap();
+            //         log::trace!("tag: {}, code: 0x{:08x}, d:{}", iddata.tag(), id, d);
+            //         xous::return_scalar(msg.sender, id as usize).unwrap();
+            //     } else {
+            //         log::trace!("ID data not in get queue!");
+            //     }
+            // }),          
+
+            Some(Opcode::WriteWBStar) => msg_scalar_unpack!(msg, addr, _, _, _, {
+                jtag.reset();
+                let mut id_leg: JtagLeg = JtagLeg::new(JtagChain::IR, "cfg_in");
+                id_leg.push_u32(0b000101, 6, JtagEndian::Little); //CFG in for 
+                jtag.add(id_leg);
+                jtag.next();
+                // NOW: - check the return data on .get() before using it
+                if jtag.get().is_none() { // discard ID code but check that there's something
+                    log::error!("ID instruction not in get queue!");
+                    xous::return_scalar(msg.sender, 0xFFFF_FFFF).unwrap();
+                    continue;
+                }
+
+                /*
+                    Array for reading WBStar
+                    0xAA995566 (Sync Word)
+                    0x20000000 (NOP)
+                    0x28020001 (Read WBStar)
+                    0xDATAXXXX (WBStar Write Value)
+                    0x20000000 (NOP)                 
+                */
+                
+                let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "cfg_in_seq");
+                data_leg.push_u32(0xAA995566, 32, JtagEndian::Little); //
+                jtag.add(data_leg);
+                jtag.next();
+                jtag.get();
+                let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "cfg_in_seq");
+                data_leg.push_u32(0x20000000, 32, JtagEndian::Little); //
+                jtag.add(data_leg);
+                jtag.next();
+                jtag.get();
+                let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "cfg_in_seq");
+                data_leg.push_u32(0x28020001, 32, JtagEndian::Little); //
+                jtag.add(data_leg);
+                jtag.next();
+                jtag.get();
+                let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "cfg_in_seq");
+                data_leg.push_u32(addr as u32, 32, JtagEndian::Little); //
+                jtag.add(data_leg);
+                jtag.next();
+                jtag.get();
+                let mut data_leg: JtagLeg = JtagLeg::new(JtagChain::DR, "cfg_in_seq");
+                data_leg.push_u32(0x20000000, 32, JtagEndian::Little); //
+                jtag.add(data_leg);
+                jtag.next();
+                jtag.get();
+             
             }),
             Some(Opcode::GetDna) => msg_blocking_scalar_unpack!(msg, _, _, _, _, {
                 jtag.reset();

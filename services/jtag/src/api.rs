@@ -25,4 +25,5 @@ pub(crate) enum Opcode {
     EfuseUserBurn,
     EfuseCtlBurn,
     WriteIr,
+    WriteWBStar,
 }

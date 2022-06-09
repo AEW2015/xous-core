@@ -54,6 +54,11 @@ impl Jtag {
         send_message(self.conn,
             Message::new_scalar(Opcode::WriteIr.to_usize().unwrap(), ir as usize, 0, 0, 0)
         ).map(|_| ())
+    }    
+    pub fn write_wbstar(&self, addr: u32) -> Result<(), xous::Error> {
+        send_message(self.conn,
+            Message::new_scalar(Opcode::WriteWBStar.to_usize().unwrap(), addr as usize, 0, 0, 0)
+        ).map(|_| ())
     }
     pub fn efuse_key_burn(&self, key: [u8; 32]) -> Result<bool, xous::Error> {
         let mut buf = Buffer::into_buf(key).or(Err(xous::Error::InternalError))?;
